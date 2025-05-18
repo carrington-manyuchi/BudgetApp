@@ -6,11 +6,29 @@
 //
 
 import SwiftUI
+import CoreData
+
+enum SheetAction: Identifiable {
+    case add
+    case edit(BudgetCategory)
+    
+    var id: Int {
+        switch self {
+        case .add:
+            return 1
+        case .edit(_):
+            return 2
+        }
+    }
+    
+}
 
 struct BudgetListView: View {
     @Environment(\.managedObjectContext) private var viewContext
-    @FetchRequest(sortDescriptors: []) private var budgetCategoryResults: FetchedResults<BudgetCategory>
-    @State private var isPresented: Bool = false
+    @FetchRequest(fetchRequest: BudgetCategory.all) var budgetCategoryResults
+    
+    @State private var sheetAction: SheetAction?
+
     
     var totalBudget: Double {
         budgetCategoryResults.reduce(0) { result, budgetCategory in
@@ -27,24 +45,31 @@ struct BudgetListView: View {
         }
     }
     
+    private func editBudgetCategory(budgetCategory: BudgetCategory) {
+        sheetAction = .edit(budgetCategory)
+    }
+    
     var body: some View {
         NavigationStack {
             VStack {
                 Text("Total: \(totalBudget as NSNumber, formatter: NumberFormatter.currency)")
                     .bold()
                 BudgetListViewCell(budgetCategoryResults: budgetCategoryResults,
-                               onDeleteBudgetCategory: deleteBudgetCategory
-                )
+                                   onDeleteBudgetCategory: deleteBudgetCategory, onEditBudgetCategory: editBudgetCategory)
             }
-            .sheet(isPresented: $isPresented, content: {
-                AddBudgetCategoryView()
+            .sheet(item: $sheetAction, content: { sheetAction in
+                switch sheetAction {
+                case .add:
+                    AddBudgetCategoryView()
+                case .edit(let budgetCategory):
+                    AddBudgetCategoryView(budgetCategory: budgetCategory)
+                }
             })
-            .presentationDetents([.medium])
             .padding()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Add Category") {
-                        isPresented = true
+                        sheetAction = .add
                     }
                 }
             }

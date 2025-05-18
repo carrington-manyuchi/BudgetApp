@@ -14,6 +14,11 @@ struct AddBudgetCategoryView: View {
     @State private var title: String = ""
     @State private var total : Double = 100
     @State private  var messages: [String] = []
+    @State private var budgetCategory: BudgetCategory?
+    
+    init(budgetCategory: BudgetCategory? = nil) {
+        self.budgetCategory = budgetCategory
+    }
     
     var isFormValid: Bool {
         messages.removeAll()
@@ -24,23 +29,46 @@ struct AddBudgetCategoryView: View {
         if total <= 0 {
             messages.append("Total must be greater than R1")
         }
-        
         return messages.count == 0
     }
     
-    private func saveBudget() {
-        let budgetCategory = BudgetCategory(context: viewContext)
-        budgetCategory.title = title
-        budgetCategory.total = total
+//    private func saveBudget() {
+//        let budgetCategory = BudgetCategory(context: viewContext)
+//        budgetCategory.title = title
+//        budgetCategory.total = total
+//        
+//        do {
+//            try viewContext.save()
+//            dismiss()
+//        } catch {
+//            print(error.localizedDescription)
+//        }
+//    }
+    
+    //last part
+    private func saveOrUpdate() {
+//        if let budgetCategory = budgetCategory {
+//            budgetCategory.setValue(title, forKey: "title")
+//            budgetCategory.setValue(total, forKey: "total")
+//        } else {
+//            saveBudget()
+//        }
         
+        if let budgetCategory {
+            let budget = BudgetCategory.byID(budgetCategory.objectID)
+            budget.title = title
+            budget.total = total
+        } else {
+            let budget = BudgetCategory(context: viewContext)
+            budget.title = title
+            budget.total = total
+        }
         
         do {
             try viewContext.save()
-            dismiss()
         } catch {
-            print(error.localizedDescription)
+            print(error)
         }
-        
     }
     
     var body: some View {
@@ -64,6 +92,12 @@ struct AddBudgetCategoryView: View {
                         .foregroundColor(.red)
                 }
             }
+            .onAppear(perform: {
+                if let budgetCategory {
+                    title = budgetCategory.title ?? ""
+                    total = budgetCategory.total
+                }
+            })
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") {
@@ -76,7 +110,8 @@ struct AddBudgetCategoryView: View {
                     Button("Save") {
                         //MARK: - TODO
                         if isFormValid {
-                            saveBudget()
+                           // saveBudget()
+                            saveOrUpdate() // lastPart
                         }
                     }
                 }

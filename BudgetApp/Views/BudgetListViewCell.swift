@@ -10,6 +10,7 @@ import SwiftUI
 struct BudgetListViewCell: View {
     let budgetCategoryResults: FetchedResults<BudgetCategory>
     let onDeleteBudgetCategory: (BudgetCategory) -> Void
+    let onEditBudgetCategory: (BudgetCategory) -> Void
     
     var body: some View {
         List {
@@ -19,10 +20,22 @@ struct BudgetListViewCell: View {
                         HStack {
                             Text(budgetCategory.title ?? "")
                             Spacer()
-                            VStack {
+                            VStack(alignment: .trailing, spacing: 10) {
                                 Text(budgetCategory.total as NSNumber, formatter: NumberFormatter.currency)
+                                
+                                Text(
+                                    "\(budgetCategory.overSpent ? "Overspent" : "Remaining") \(Text(budgetCategory.remainingBudgetTotal as NSNumber, formatter: NumberFormatter.currency))"
+                                )
+                                .frame(maxWidth: .infinity, alignment: .trailing)
+                                .bold()
+                                .foregroundStyle(budgetCategory.overSpent ? .red : .green)
                             }
+                           
                         }
+                        .onLongPressGesture {
+                            onEditBudgetCategory(budgetCategory)
+                        }
+                        .contentShape(Rectangle())
                     }
                 }
                 .onDelete { indexSet in
@@ -33,6 +46,7 @@ struct BudgetListViewCell: View {
                 Text("No budget categories exists")
             }
         }
+        .listStyle(.plain)
         .navigationDestination(for: BudgetCategory.self) { budgetCategory in
             BudgetDetailView(budgetCategory: budgetCategory)
         }

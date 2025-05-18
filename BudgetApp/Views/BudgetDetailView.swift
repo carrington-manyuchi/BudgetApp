@@ -51,6 +51,17 @@ struct BudgetDetailView: View {
         
         do {
             try viewContext.save()
+            title = ""
+            total = ""
+        } catch {
+            print(error)
+        }
+    }
+    
+    private func deleteTransaction(_ transaction: Transaction) {
+        viewContext.delete(transaction)
+        do {
+            try viewContext.save()
         } catch {
             print(error)
         }
@@ -82,16 +93,21 @@ struct BudgetDetailView: View {
                     }
                 }
                 .centerHorizontally()
-                
-                
                 ForEach(messages, id: \.self) { message in
                     Text(message)
                         .foregroundColor(.red)
                         .font(.caption)
                 }
             }
+            .frame(maxHeight: .infinity)
             
-            TransactionListView(request: BudgetCategory.transactionsByCategoryRequest(budgetCategory))
+            //MARK: - Display summary of the budget category
+            BudgetSummaryView(budgetCategory: budgetCategory)
+            
+            
+            //MARK: - display the transaction
+            TransactionListView(request: BudgetCategory.transactionsByCategoryRequest(budgetCategory), onDeleteTransaction: deleteTransaction)
+            
         }
         .padding(.top, 30)
         Spacer()
