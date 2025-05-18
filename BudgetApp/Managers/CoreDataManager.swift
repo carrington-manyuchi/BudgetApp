@@ -14,10 +14,10 @@ class CoreDataManager {
     private var persistentContainer: NSPersistentContainer
     
     private init() {
-        persistentContainer = NSPersistentContainer(name: "BudgetModel")
+        persistentContainer = NSPersistentContainer(name: "Budget")
         persistentContainer.loadPersistentStores { description, error in
             if let error = error as NSError? {
-                fatalError("Unable to initialize COre Data stack: \(error), \(error.userInfo)")
+                fatalError("Unable to initialize Core Data stack: \(error), \(error.userInfo)")
             }
         }
     }
