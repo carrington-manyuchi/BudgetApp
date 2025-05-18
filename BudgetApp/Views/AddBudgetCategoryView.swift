@@ -12,6 +12,34 @@ struct AddBudgetCategoryView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @State private var title: String = ""
     @State private var total : Double = 100
+    @State private  var messages: [String] = []
+    
+    var isFormValid: Bool {
+        messages.removeAll()
+        if title.isEmpty {
+            messages.append("Title is required")
+        }
+        
+        if total <= 0 {
+            messages.append("Total must be greater than R1")
+        }
+        
+        return messages.count == 0
+    }
+    
+    private func saveBudget() {
+        let budgetCategory = BudgetCategory(context: viewContext)
+        budgetCategory.title = title
+        budgetCategory.total = total
+        
+        
+        do {
+            try viewContext.save()
+        } catch {
+            print(error.localizedDescription)
+        }
+        
+    }
     
     var body: some View {
         NavigationStack {
@@ -25,6 +53,14 @@ struct AddBudgetCategoryView: View {
                     Text("R500")
                 }
                 
+                Text(total as NSNumber, formatter: NumberFormatter.currency)
+                    .centerHorizontally()
+                
+                ForEach(messages, id: \.self) { message in
+                    Text(message)
+                        .font(.caption)
+                        .foregroundColor(.red)
+                }
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -36,6 +72,9 @@ struct AddBudgetCategoryView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Save") {
                         //MARK: - TODO
+                        if isFormValid {
+                            saveBudget()
+                        }
                     }
                 }
                 
