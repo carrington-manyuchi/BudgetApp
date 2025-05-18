@@ -36,6 +36,7 @@ struct AddBudgetCategoryView: View {
         
         do {
             try viewContext.save()
+            dismiss()
         } catch {
             print(error.localizedDescription)
         }
